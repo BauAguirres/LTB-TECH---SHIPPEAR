@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Camera, Check, ImagePlus, KeyRound, Loader2, RefreshCw, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Panel } from '@/components/admin/admin-ui'
+import { CameraCapture } from '@/components/admin/digitization/camera-capture'
 import type { ProductOption } from '@/components/admin/digitization/digitization-workspace'
 import { TargetSelects } from '@/components/admin/digitization/target-selects'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,7 @@ export function NewJobForm({
   const [mode, setMode] = useState<JobMode>(providerConfigured ? 'meshy' : 'test')
   const [simulateFailure, setSimulateFailure] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
   const busyRef = useRef(false)
   const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
@@ -58,11 +60,20 @@ export function NewJobForm({
 
   useEffect(() => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.url)), [])
 
-  function addFiles(files: FileList | null) {
+  const closeCamera = useCallback(() => setCameraOpen(false), [])
+
+  // Si el navegador no da acceso a la cámara en vivo, se usa la cámara nativa del sistema.
+  const cameraUnavailable = useCallback(() => {
+    setCameraOpen(false)
+    toast.info('No se pudo abrir la cámara integrada. Se usará la cámara del dispositivo.')
+    window.setTimeout(() => cameraRef.current?.click(), 0)
+  }, [])
+
+  function addFiles(files: FileList | File[] | null) {
     if (!files?.length) return
     const rejected: string[] = []
     const accepted: Photo[] = []
-    for (const file of files) {
+    for (const file of Array.from(files)) {
       const reason = rejectionReason(file)
       if (reason) rejected.push(`${file.name}: ${reason}`)
       else accepted.push({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) })
@@ -160,6 +171,13 @@ export function NewJobForm({
 
   return (
     <div className="flex flex-col gap-5">
+      <CameraCapture
+        open={cameraOpen}
+        remaining={MAX_PHOTOS - photos.length}
+        onCapture={(file) => addFiles([file])}
+        onClose={closeCamera}
+        onUnavailable={cameraUnavailable}
+      />
       <Panel className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <h2 className="font-display text-lg font-semibold">Producto</h2>
@@ -189,7 +207,7 @@ export function NewJobForm({
             </span>
           </h2>
           <div className="flex gap-2">
-            <Button type="button" onClick={() => cameraRef.current?.click()} disabled={photos.length >= MAX_PHOTOS || !!busy}>
+            <Button type="button" onClick={() => setCameraOpen(true)} disabled={photos.length >= MAX_PHOTOS || !!busy}>
               <Camera className="size-4" aria-hidden="true" />
               Tomar foto
             </Button>
@@ -212,7 +230,7 @@ export function NewJobForm({
               key={i}
               ref={ref}
               type="file"
-              accept={ALLOWED_PHOTO_TYPES.join(',')}
+              accept={capture ? 'image/*' : ALLOWED_PHOTO_TYPES.join(',')}
               capture={capture ? 'environment' : undefined}
               multiple={multiple}
               className="sr-only"

@@ -5,6 +5,7 @@ import { ExternalLink } from 'lucide-react'
 import { PageHeader } from '@/components/admin/admin-ui'
 import { ProductForm } from '@/components/admin/product-form'
 import { ProductImagesManager } from '@/components/admin/product-images-manager'
+import { ProductModelsManager } from '@/components/admin/product-models-manager'
 import { buttonVariants } from '@/components/ui/button'
 import { getProductById } from '@/lib/products'
 
@@ -30,6 +31,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       />
       <div className="flex flex-col gap-5">
         <ProductImagesManager productId={product.id} images={product.images} />
+        <ProductModelsManager
+          productId={product.id}
+          productLabel={`${product.brand} ${product.name}`}
+          colors={[...new Set(product.variants.map((v) => v.color))]}
+          models={product.models}
+        />
         <ProductForm key={product.updated_at} product={product} />
       </div>
     </>
