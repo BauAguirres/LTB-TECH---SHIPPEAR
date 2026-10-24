@@ -3,9 +3,18 @@ import { ArrowRight } from 'lucide-react'
 import { PageHeader, Panel, StatusBadge } from '@/components/admin/admin-ui'
 import { buttonVariants } from '@/components/ui/button'
 import { getAllProducts, getTotalStock } from '@/lib/products'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function AdminDashboard() {
-  const products = await getAllProducts()
+  const supabase = await createClient()
+  const [products, { count }] = await Promise.all([
+    getAllProducts(),
+    supabase
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['paid', 'preparing', 'ready_for_pickup']),
+  ])
+  const toPrepare = count ?? 0
   const published = products.filter((p) => p.status === 'published').length
   const variants = products.flatMap((p) => p.variants)
   const totalStock = variants.reduce((s, v) => s + v.stock, 0)
@@ -70,7 +79,15 @@ export default async function AdminDashboard() {
             Ir a digitalización
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
-          <p className="mt-auto text-xs text-muted-foreground">Pedidos registrados: 0 (se habilitan en la Fase 6).</p>
+          <Link
+            href="/admin/pedidos"
+            className="mt-auto flex w-fit items-center gap-1 text-sm font-semibold text-primary hover:underline"
+          >
+            {toPrepare === 0
+              ? 'Sin pedidos pagados para preparar'
+              : `${toPrepare} ${toPrepare === 1 ? 'pedido pagado' : 'pedidos pagados'} para preparar`}
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
         </Panel>
       </div>
     </>

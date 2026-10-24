@@ -2,11 +2,12 @@
 
 import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Box, LayoutDashboard, Loader2, Package, Settings, Store } from 'lucide-react'
+import { Box, LayoutDashboard, Loader2, Package, Settings, ShoppingBag, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
   { href: '/admin', label: 'Resumen', icon: LayoutDashboard },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingBag },
   { href: '/admin/productos', label: 'Productos', icon: Package },
   { href: '/admin/digitalizacion', label: 'Digitalización 3D', icon: Box },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
