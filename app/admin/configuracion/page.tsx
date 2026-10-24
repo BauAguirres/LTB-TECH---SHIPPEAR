@@ -6,9 +6,13 @@ export const metadata: Metadata = { title: 'Configuración' }
 const integrations = [
   { name: 'Base de datos y autenticación', provider: 'Supabase', status: 'Conectado' },
   { name: 'Almacenamiento de fotos', provider: 'Supabase Storage', status: 'Conectado' },
-  { name: 'Generación de modelos 3D', provider: 'Proveedor de fotogrametría', status: 'Pendiente · Fase 3' },
-  { name: 'Visor 3D y realidad aumentada', provider: 'model-viewer', status: 'Pendiente' },
-  { name: 'Pedidos reales y descuento de stock', provider: 'Supabase', status: 'Pendiente' },
+  {
+    name: 'Generación de modelos 3D',
+    provider: 'Meshy (image-to-3D)',
+    status: process.env.MESHY_API_KEY ? 'Conectado' : 'Modo prueba · falta MESHY_API_KEY',
+  },
+  { name: 'Visor 3D y realidad aumentada', provider: 'model-viewer · WebXR, Scene Viewer, Quick Look', status: 'Conectado' },
+  { name: 'Pedidos de demostración y descuento de stock', provider: 'Supabase', status: 'Conectado' },
 ]
 
 export default function SettingsPage() {
