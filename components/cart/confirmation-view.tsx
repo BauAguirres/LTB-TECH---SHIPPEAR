@@ -30,19 +30,25 @@ export function ConfirmationView() {
   function submit() {
     setError(null)
     startTransition(async () => {
-      const result = await placeDemoOrder({
-        idempotencyKey,
-        email,
-        items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
-      })
-      if (result.ok) {
-        setConfirmed({ orderId: result.orderId, total: result.total, count: result.itemCount })
-        clear()
-        setIdempotencyKey(crypto.randomUUID())
-      } else {
+      try {
+        const result = await placeDemoOrder({
+          idempotencyKey,
+          email,
+          items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+        })
+        if (result.ok) {
+          setConfirmed({ orderId: result.orderId, total: result.total, count: result.itemCount })
+          clear()
+          setIdempotencyKey(crypto.randomUUID())
+          return
+        }
+
         setError({ message: result.error, variantId: result.unavailableVariantId })
-        // El pedido fue rechazado sin guardarse: el próximo intento (con el carrito corregido) es uno nuevo.
-        setIdempotencyKey(crypto.randomUUID())
+        // En errores de validación/stock usamos una nueva clave tras corregir el carrito.
+        if (!result.keepIdempotencyKey) setIdempotencyKey(crypto.randomUUID())
+      } catch {
+        setError({ message: 'No pudimos registrar el pedido. Intentá de nuevo en unos segundos.' })
+        // En fallas inesperadas conservamos la clave para que el reintento sea idempotente.
       }
     })
   }
