@@ -1,26 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { signUpAction } from '@/lib/auth-actions'
 import { createClient } from '@/lib/supabase/client'
 
-function signUpErrorMessage(error: unknown): string {
-  const { code, status } = (error ?? {}) as { code?: string; status?: number }
-  if (code === 'weak_password') return 'La contraseña es muy débil. Usá al menos 8 caracteres combinando letras y números.'
-  if (code === 'email_address_invalid') return 'Ese email no es válido.'
-  if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit' || status === 429)
-    return 'Se alcanzó el límite de envíos. Esperá unos minutos y volvé a probar.'
-  return 'No pudimos crear la cuenta. Intentá de nuevo.'
-}
-
 export function SignUpForm() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [sent, setSent] = useState(false)
+  const [created, setCreated] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -30,27 +24,29 @@ export function SignUpForm() {
     }
     setIsLoading(true)
     setError(null)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
-      },
-    })
-    setIsLoading(false)
-    if (error) {
-      setError(signUpErrorMessage(error))
+    const result = await signUpAction({ email, password })
+    if (!result.ok) {
+      setError(result.error)
+      setIsLoading(false)
       return
     }
-    setSent(true)
+
+    const supabase = createClient()
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    if (signInError) {
+      setCreated(true)
+      setIsLoading(false)
+      return
+    }
+    router.replace('/admin')
+    router.refresh()
   }
 
-  if (sent) {
+  if (created) {
     return (
       <div role="status" className="rounded-xl bg-accent p-4 text-sm leading-relaxed text-accent-foreground">
-        Te enviamos un email para confirmar la cuenta. Después de confirmarla, un administrador tiene que habilitar tu
-        acceso al panel.
+        Tu cuenta se creó. Ya podés ingresar con tu email y contraseña; un administrador tiene que habilitar tu acceso
+        al panel.
       </div>
     )
   }
