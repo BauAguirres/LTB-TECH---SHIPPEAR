@@ -39,7 +39,7 @@ export function PurchasePanel({ product }: { product: ProductWithRelations }) {
       slug: product.slug,
       name: product.name,
       brand: product.brand,
-      image: product.images[0]?.storage_path ?? '',
+      image: product.images[0]?.url ?? '',
       size: variant.size,
       color: variant.color,
       unitPrice: product.price,

@@ -1,4 +1,5 @@
-// Tipos alineados con el esquema de Supabase planificado para la Fase 2.
+// Tipos de dominio. Reflejan las tablas de Supabase (ver supabase/migrations).
+// Los precios se guardan en centavos (bigint) y se exponen en pesos en la app.
 
 export type ProductStatus = 'draft' | 'published'
 
@@ -10,6 +11,7 @@ export interface Product {
   slug: string
   brand: string
   description: string
+  /** Precio en pesos (derivado de price_cents). */
   price: number
   status: ProductStatus
   created_at: string
@@ -30,7 +32,10 @@ export interface ProductVariant {
 export interface ProductImage {
   id: string
   product_id: string
+  /** Ruta dentro del bucket product-images, o ruta local (/images/...) para datos de demo. */
   storage_path: string
+  /** URL lista para usar en <img>. */
+  url: string
   alt_text: string
   sort_order: number
   created_at: string
@@ -39,12 +44,11 @@ export interface ProductImage {
 export interface ProductModel {
   id: string
   product_id: string
-  storage_path: string | null
-  provider: string
-  provider_task_id: string | null
+  glb_url: string | null
   status: ModelStatus
+  provider: string | null
+  provider_task_id: string | null
   error_message: string | null
-  is_demo: boolean
   created_at: string
   updated_at: string
 }
@@ -57,9 +61,10 @@ export interface ProductWithRelations extends Product {
 
 export interface Order {
   id: string
-  status: string
-  subtotal: number
-  total: number
+  status: 'pending' | 'paid' | 'cancelled' | 'fulfilled'
+  customer_email: string | null
+  subtotal_cents: number
+  total_cents: number
   is_demo: boolean
   created_at: string
 }
@@ -67,12 +72,12 @@ export interface Order {
 export interface OrderItem {
   id: string
   order_id: string
-  product_id: string
-  variant_id: string
+  product_id: string | null
+  variant_id: string | null
   product_name: string
   size: string
   color: string
-  unit_price: number
+  unit_price_cents: number
   quantity: number
 }
 
