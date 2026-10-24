@@ -4,14 +4,14 @@ import type { ProductWithRelations } from '@/lib/types'
 
 export function ProductMedia({ product }: { product: ProductWithRelations }) {
   const image = product.images[0]
-  const hasModel = product.model?.status === 'completed' && product.model.storage_path
+  const hasModel = product.model?.status === 'completed' && !!product.model.glb_url
 
   return (
     <div className="flex flex-col gap-3">
       <div className="relative aspect-square overflow-hidden rounded-3xl border border-border bg-card">
         {image && (
           <Image
-            src={image.storage_path || '/placeholder.svg'}
+            src={image.url}
             alt={image.alt_text}
             fill
             priority

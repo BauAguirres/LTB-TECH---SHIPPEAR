@@ -16,17 +16,17 @@ export default async function AdminProductsPage() {
     brand: p.brand,
     price: p.price,
     status: p.status,
-    image: p.images[0]?.storage_path ?? '',
+    image: p.images[0]?.url ?? '',
     stock: getTotalStock(p),
     variantCount: p.variants.length,
-    hasModel: p.model?.status === 'completed',
+    hasModel: p.model?.status === 'completed' && !!p.model.glb_url,
   }))
 
   return (
     <>
       <PageHeader
         title="Productos"
-        description={`${products.length} productos en el catálogo de demostración.`}
+        description={`${products.length} productos guardados en Supabase.`}
         action={
           <Link href="/admin/productos/nuevo" className={buttonVariants()}>
             Nuevo producto

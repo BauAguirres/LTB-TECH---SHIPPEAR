@@ -10,7 +10,7 @@ export default async function AdminDashboard() {
   const variants = products.flatMap((p) => p.variants)
   const totalStock = variants.reduce((s, v) => s + v.stock, 0)
   const outOfStock = variants.filter((v) => v.stock === 0).length
-  const withModel = products.filter((p) => p.model?.status === 'completed').length
+  const withModel = products.filter((p) => p.model?.status === 'completed' && !!p.model.glb_url).length
 
   const stats = [
     { label: 'Productos', value: products.length, note: `${published} publicados · ${products.length - published} borradores` },
@@ -29,7 +29,7 @@ export default async function AdminDashboard() {
     <>
       <PageHeader
         title="Resumen"
-        description="Estado general del catálogo de demostración."
+        description="Estado general del catálogo en Supabase."
         action={
           <Link href="/admin/productos/nuevo" className={buttonVariants()}>
             Nuevo producto

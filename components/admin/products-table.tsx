@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Pencil } from 'lucide-react'
+import { StatusToggle } from '@/components/admin/status-toggle'
 import { StatusBadge } from '@/components/admin/admin-ui'
 import { formatPrice } from '@/lib/format'
 import type { ProductStatus } from '@/lib/types'
@@ -100,23 +101,30 @@ export function ProductsTable({ rows }: { rows: ProductRow[] }) {
                   {row.stock} u. <span className="text-xs text-muted-foreground">· {row.variantCount} var.</span>
                 </td>
                 <td className="px-4 py-3">
-                  <StatusBadge tone={row.status === 'published' ? 'primary' : 'muted'}>
-                    {row.status === 'published' ? 'Publicado' : 'Borrador'}
-                  </StatusBadge>
+                  <StatusToggle id={row.id} name={row.name} status={row.status} />
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge tone={row.hasModel ? 'primary' : 'muted'}>{row.hasModel ? 'Listo' : 'Sin modelo'}</StatusBadge>
                 </td>
-                <td className="px-4 py-3 text-right">
-                  {row.status === 'published' && (
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-3">
                     <Link
-                      href={`/producto/${row.slug}`}
-                      className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                      href={`/admin/productos/${row.id}`}
+                      className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
                     >
-                      Ver
-                      <ExternalLink className="size-3.5" aria-hidden="true" />
+                      <Pencil className="size-3.5" aria-hidden="true" />
+                      Editar
                     </Link>
-                  )}
+                    {row.status === 'published' && (
+                      <Link
+                        href={`/producto/${row.slug}`}
+                        className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                      >
+                        Ver
+                        <ExternalLink className="size-3.5" aria-hidden="true" />
+                      </Link>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -124,9 +132,6 @@ export function ProductsTable({ rows }: { rows: ProductRow[] }) {
         </table>
         {visible.length === 0 && <p className="p-8 text-center text-muted-foreground">Sin resultados.</p>}
       </div>
-      <p className="text-xs text-muted-foreground">
-        La edición, publicación y eliminación se habilitan en la Fase 2, cuando el catálogo se guarde en Supabase.
-      </p>
     </div>
   )
 }

@@ -25,7 +25,7 @@ export function ProductCard({ product, priority = false }: { product: ProductWit
       <div className="relative aspect-square overflow-hidden bg-muted">
         {image && (
           <Image
-            src={image.storage_path || '/placeholder.svg'}
+            src={image.url}
             alt={image.alt_text}
             fill
             priority={priority}
@@ -33,7 +33,7 @@ export function ProductCard({ product, priority = false }: { product: ProductWit
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
-        {product.model?.status === 'completed' && (
+        {product.model?.status === 'completed' && !!product.model.glb_url && (
           <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs font-semibold">
             <Box className="size-3.5 text-primary" aria-hidden="true" />
             3D · AR
