@@ -2,21 +2,22 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Box, Images, Info } from 'lucide-react'
 import { SneakerViewer } from '@/components/viewer/sneaker-viewer'
-import { DEMO_SNEAKER_MODEL } from '@/lib/models'
+import { resolveModelForColor } from '@/lib/models'
 import { cn } from '@/lib/utils'
 import type { ProductWithRelations } from '@/lib/types'
 
 type View = 'photos' | '3d'
 
-export function ProductMedia({ product }: { product: ProductWithRelations }) {
+export function ProductMedia({ product, color }: { product: ProductWithRelations; color: string | null }) {
   const [view, setView] = useState<View>('photos')
   const [activeImage, setActiveImage] = useState(0)
 
   const image = product.images[activeImage] ?? product.images[0]
-  const ownModel = product.model?.status === 'completed' && product.model.glb_url ? product.model.glb_url : null
-  const modelSrc = ownModel ?? DEMO_SNEAKER_MODEL.src
+  const model = resolveModelForColor(product.models, color)
+  const hasAnyModel = product.models.length > 0
   const productLabel = `${product.brand} ${product.name}`
 
   return (
@@ -28,7 +29,7 @@ export function ProductMedia({ product }: { product: ProductWithRelations }) {
         </TabButton>
         <TabButton active={view === '3d'} onClick={() => setView('3d')} controls="panel-3d">
           <Box className="size-4" aria-hidden="true" />
-          {ownModel ? 'Ver en 3D y AR' : '3D de demostración'}
+          3D y AR
         </TabButton>
       </div>
 
@@ -68,37 +69,66 @@ export function ProductMedia({ product }: { product: ProductWithRelations }) {
         </div>
       ) : (
         <div id="panel-3d" role="tabpanel" className="flex flex-col gap-3">
-          {!ownModel && (
-            <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-accent-foreground">
-              <Info className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-              <p className="text-sm leading-relaxed">
-                <span className="font-semibold">Modelo genérico de demostración.</span> Este producto todavía no fue
-                digitalizado, así que mostramos una zapatilla genérica para que pruebes el visor y la realidad
-                aumentada. No representa al {productLabel}.
-              </p>
-            </div>
-          )}
-          <SneakerViewer
-            key={modelSrc}
-            src={modelSrc}
-            alt={ownModel ? `Modelo 3D de ${productLabel}` : DEMO_SNEAKER_MODEL.alt}
-            poster={ownModel ? image?.url : undefined}
-          />
-          {!ownModel && (
-            <p className="text-xs text-muted-foreground">
-              Modelo:{' '}
-              <a
-                href={DEMO_SNEAKER_MODEL.attribution.href}
-                target="_blank"
-                rel="noreferrer"
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                {DEMO_SNEAKER_MODEL.attribution.label}
-              </a>
-            </p>
+          {model?.glb_url ? (
+            <SneakerViewer
+              key={model.glb_url}
+              src={model.glb_url}
+              alt={`Modelo 3D de ${productLabel}${model.color ? ` en color ${model.color}` : ''}`}
+              poster={image?.url}
+            />
+          ) : (
+            <NoModelNotice
+              productLabel={productLabel}
+              color={color}
+              reason={hasAnyModel ? 'color' : 'product'}
+              onShowPhotos={() => setView('photos')}
+            />
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+function NoModelNotice({
+  productLabel,
+  color,
+  reason,
+  onShowPhotos,
+}: {
+  productLabel: string
+  color: string | null
+  reason: 'product' | 'color'
+  onShowPhotos: () => void
+}) {
+  return (
+    <div className="flex aspect-square flex-col items-center justify-center gap-5 rounded-3xl border border-dashed border-border bg-card p-8 text-center">
+      <Info className="size-8 text-muted-foreground" aria-hidden="true" />
+      <div className="flex flex-col gap-2">
+        <p className="text-balance font-display text-lg font-bold">
+          {reason === 'color' ? `Sin modelo 3D para el color ${color}` : 'Modelo 3D todavía no disponible'}
+        </p>
+        <p className="max-w-sm text-pretty text-sm leading-relaxed text-muted-foreground">
+          {reason === 'color'
+            ? `El ${productLabel} tiene modelo 3D en otros colores. Elegí otro color o mirá las fotos de este.`
+            : `El ${productLabel} aún no fue digitalizado, por eso la vista 3D y la realidad aumentada no están disponibles. Podés ver sus fotos.`}
+        </p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={onShowPhotos}
+          className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+        >
+          Ver fotos
+        </button>
+        <Link
+          href="/demo-3d"
+          className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
+        >
+          Probar el visor con un modelo de demostración
+        </Link>
+      </div>
     </div>
   )
 }

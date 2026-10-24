@@ -45,6 +45,8 @@ export interface ProductModel {
   id: string
   product_id: string
   glb_url: string | null
+  /** Color al que corresponde el modelo. null = aplica a todos los colores. */
+  color: string | null
   status: ModelStatus
   provider: string | null
   provider_task_id: string | null
@@ -57,6 +59,8 @@ export interface ProductWithRelations extends Product {
   variants: ProductVariant[]
   images: ProductImage[]
   model: ProductModel | null
+  /** Modelos completados con un GLB válido, utilizables en el visor. */
+  models: ProductModel[]
 }
 
 export interface Order {

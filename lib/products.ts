@@ -4,6 +4,7 @@
 
 import 'server-only'
 import { createClient, createPublicClient } from '@/lib/supabase/server'
+import { isValidGlbUrl } from '@/lib/models'
 import { productImageUrl } from '@/lib/storage'
 import type {
   CatalogFilters,
@@ -18,7 +19,7 @@ const PRODUCT_SELECT = `
   id, name, slug, brand, description, price_cents, status, created_at, updated_at,
   variants:product_variants (id, product_id, size, color, sku, stock, created_at, updated_at),
   images:product_images (id, product_id, storage_path, alt_text, sort_order, created_at),
-  models:product_models (id, product_id, glb_url, status, provider, provider_task_id, error_message, created_at, updated_at)
+  models:product_models (id, product_id, glb_url, color, status, provider, provider_task_id, error_message, created_at, updated_at)
 `
 
 interface ProductRow {
@@ -43,6 +44,12 @@ function pickModel(models: ProductRow['models']): ProductModel | null {
   return sorted.find((m) => m.status === 'completed' && m.glb_url) ?? sorted[0]
 }
 
+function usableModels(models: ProductRow['models']): ProductModel[] {
+  return (models ?? [])
+    .filter((m) => m.status === 'completed' && isValidGlbUrl(m.glb_url))
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+}
+
 function mapProduct(row: ProductRow): ProductWithRelations {
   return {
     id: row.id,
@@ -61,6 +68,7 @@ function mapProduct(row: ProductRow): ProductWithRelations {
       .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at))
       .map((img) => ({ ...img, url: productImageUrl(img.storage_path) })),
     model: pickModel(row.models),
+    models: usableModels(row.models),
   }
 }
 
