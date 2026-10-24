@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useSyncExternalStore }
 import type { CartItem } from '@/lib/types'
 
 // El carrito es estado efímero del navegador (permitido por la especificación).
-// Los pedidos se persistirán en Supabase en la Fase 6.
+// Los pedidos se registran en Supabase vía place_demo_order (lib/orders/actions.ts).
 const STORAGE_KEY = 'sneakar-cart-v1'
 const EMPTY: CartItem[] = []
 
