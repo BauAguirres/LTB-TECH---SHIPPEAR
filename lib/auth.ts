@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -8,8 +9,12 @@ export interface SessionInfo {
   isAdmin: boolean
 }
 
-/** Lee la sesión validada con el servidor de Auth y consulta el rol en la base. */
-export async function getSession(): Promise<SessionInfo | null> {
+/**
+ * Lee la sesión validada con el servidor de Auth y consulta el rol en la base.
+ * Se memoiza por request: el layout del panel y cada página lo llaman, y sin esto
+ * repetían dos viajes de red idénticos en cada navegación.
+ */
+export const getSession = cache(async (): Promise<SessionInfo | null> => {
   const supabase = await createClient()
   const {
     data: { user },
@@ -20,7 +25,7 @@ export async function getSession(): Promise<SessionInfo | null> {
   if (error) console.error('[auth] is_admin failed:', error.message)
 
   return { userId: user.id, email: user.email ?? null, isAdmin: isAdmin === true }
-}
+})
 
 /** Protege páginas del panel: redirige si no hay sesión o si el usuario no es admin. */
 export async function requireAdmin(): Promise<SessionInfo> {

@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Box, LayoutDashboard, Package, Settings, Store } from 'lucide-react'
+import { Box, LayoutDashboard, Loader2, Package, Settings, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
@@ -11,6 +11,17 @@ const links = [
   { href: '/admin/digitalizacion', label: 'Digitalización 3D', icon: Box },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
 ]
+
+const linkClass = 'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors'
+
+function NavIcon({ icon: Icon }: { icon: typeof Box }) {
+  const { pending } = useLinkStatus()
+  return pending ? (
+    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+  ) : (
+    <Icon className="size-4" aria-hidden="true" />
+  )
+}
 
 export function AdminNav() {
   const pathname = usePathname()
@@ -24,22 +35,23 @@ export function AdminNav() {
             href={link.href}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              linkClass,
               active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )}
           >
-            <link.icon className="size-4" aria-hidden="true" />
+            <NavIcon icon={link.icon} />
             {link.label}
           </Link>
         )
       })}
-      <Link
+      {/* Sale del panel hacia la tienda: navegación completa, sin depender del router del admin. */}
+      <a
         href="/"
-        className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground lg:mt-4"
+        className={cn(linkClass, 'text-muted-foreground hover:bg-muted hover:text-foreground lg:mt-4')}
       >
         <Store className="size-4" aria-hidden="true" />
         Ver tienda
-      </Link>
+      </a>
     </nav>
   )
 }
