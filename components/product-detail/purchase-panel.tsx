@@ -10,12 +10,19 @@ import { formatPrice, getSwatch } from '@/lib/format'
 import type { ProductWithRelations } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-export function PurchasePanel({ product }: { product: ProductWithRelations }) {
+export function PurchasePanel({
+  product,
+  color,
+  onColorChange: setColor,
+}: {
+  product: ProductWithRelations
+  color: string | null
+  onColorChange: (color: string) => void
+}) {
   const { addItem } = useCart()
   const colors = [...new Set(product.variants.map((v) => v.color))]
   const sizes = [...new Set(product.variants.map((v) => v.size))].sort((a, b) => Number(a) - Number(b))
 
-  const [color, setColor] = useState(colors[0])
   const [size, setSize] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
 

@@ -22,6 +22,8 @@ export interface SneakerViewerProps {
   alt: string
   poster?: string
   className?: string
+  /** Variante de material del GLB (KHR_materials_variants), si el modelo las tiene. */
+  variantName?: string
   options?: {
     initialOrbit?: string
     autoRotate?: boolean
@@ -50,6 +52,7 @@ export function SneakerViewer({
   alt,
   poster,
   className,
+  variantName,
   options,
   loadingLabel = 'Cargando modelo 3D',
   errorMessage = 'No pudimos cargar el modelo 3D. Revisá tu conexión e intentá de nuevo.',
@@ -171,6 +174,7 @@ export function SneakerViewer({
             src={src}
             alt={alt}
             poster={poster}
+            variant-name={variantName}
             loading="eager"
             camera-controls
             touch-action="pan-y"
@@ -261,18 +265,26 @@ export function SneakerViewer({
           {enableAR && arSupport === 'supported' && (
             <Button size="lg" onClick={launchAR} className="w-full">
               <ScanLine aria-hidden="true" />
-              Ver en tu espacio
+              Probar en mi espacio
             </Button>
           )}
 
           {enableAR && arSupport === 'unsupported' && (
-            <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4">
-              <Smartphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                <span className="font-semibold text-foreground">Realidad aumentada no disponible en este navegador.</span>{' '}
-                Podés seguir explorando la zapatilla en 3D: arrastrá para rotar, pellizcá o usá la rueda para hacer
-                zoom. Para verla en tu espacio, abrí esta página desde un teléfono Android con ARCore o un iPhone.
-              </p>
+            <div className="flex flex-col gap-3">
+              <Button size="lg" disabled className="w-full" aria-describedby="ar-unsupported">
+                <ScanLine aria-hidden="true" />
+                Probar en mi espacio
+              </Button>
+              <div id="ar-unsupported" className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4">
+                <Smartphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  <span className="font-semibold text-foreground">
+                    Tu dispositivo o navegador no admite realidad aumentada.
+                  </span>{' '}
+                  Podés seguir explorando el modelo en 3D. La AR suele funcionar en teléfonos Android compatibles con
+                  ARCore (Chrome) y en iPhone o iPad con Safari, pero la compatibilidad depende de cada equipo.
+                </p>
+              </div>
             </div>
           )}
 

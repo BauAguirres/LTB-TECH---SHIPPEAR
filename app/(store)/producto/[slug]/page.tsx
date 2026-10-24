@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
-import { ProductMedia } from '@/components/product-detail/product-media'
-import { PurchasePanel } from '@/components/product-detail/purchase-panel'
+import { ProductDetail } from '@/components/product-detail/product-detail'
 import { ProductGrid } from '@/components/products/product-grid'
 import { getProductBySlug, getRelatedProducts } from '@/lib/products'
 
@@ -28,10 +27,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <ChevronLeft className="size-4" aria-hidden="true" />
           Volver al catálogo
         </Link>
-        <div className="grid gap-10 lg:grid-cols-2">
-          <ProductMedia product={product} />
-          <PurchasePanel key={product.id} product={product} />
-        </div>
+        <ProductDetail key={product.id} product={product} />
       </div>
 
       {related.length > 0 && (
